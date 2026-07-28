@@ -451,7 +451,7 @@ class VideoBot:
 
 # ---------- تشغيل البوت ----------
 if __name__ == "__main__":
-    TOKEN = "8502033667:AAF6tPgPIz2DmHtTXg6Icsh_P51xpsVjcq8"
+    TOKEN = os.environ.get("BOT_TOKEN", "8502033667:AAF6tPgPIz2DmHtTXg6Icsh_P51xpsVjcq8")
     bot = VideoBot(TOKEN)
     try:
         bot.run()
