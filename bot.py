@@ -24,7 +24,7 @@ except ImportError as e:
     sys.exit(1)
 
 # ---------- إعدادات المالك ----------
-OWNER_ID = 7330508457
+TELEGRAM: @MR_TPT
 
 # ---------- إعداد السجل ----------
 logging.basicConfig(
