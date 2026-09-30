@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# بوت تحميل الفيديوهات – يدعم YouTube, TikTok, Instagram, Twitter, Facebook, Pinterest
-# نسخة محسنة بدون أخطاء "Message is not modified" وبدون مشاكل الكوكيز
+
 
 import os
 import sys
