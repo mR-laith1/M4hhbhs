@@ -1,5 +1,3 @@
-
-
 import os
 import sys
 import logging
@@ -21,7 +19,7 @@ except ImportError as e:
     sys.exit(1)
 
 # ---------- إعدادات المالك ----------
-TELEGRAM: @MR_TPT
+OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
 
 # ---------- إعداد السجل ----------
 logging.basicConfig(
@@ -70,6 +68,8 @@ class UserTracker:
         self._save()
 
     async def notify_owner(self, context, user):
+        if OWNER_ID == 0:
+            return
         try:
             msg = f"👤 <b>مستخدم جديد!</b>\n\n🆔 الأيدي: <code>{user.id}</code>\n👤 الاسم: {user.first_name or ''} {user.last_name or ''}\n📛 اليوزر: @{user.username if user.username else 'بدون'}\n📅 التاريخ: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
             await context.bot.send_message(chat_id=OWNER_ID, text=msg, parse_mode='HTML')
@@ -96,7 +96,6 @@ class PlatformChecker:
                 if re.search(p, url, re.IGNORECASE):
                     return {'valid': True, 'platform': platform}
         return {'valid': False, 'platform': None}
-
 # ---------- TikTok Downloader (بدون كوكيز) ----------
 class TikTokDownloader:
     HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
@@ -117,7 +116,7 @@ class TikTokDownloader:
             video_id = TikTokDownloader.extract_video_id(url)
             if not video_id:
                 return {'success': False, 'error': 'لم يتم استخراج معرف الفيديو'}
-            
+
             api_url = f"https://tikmate.app/api/video/{video_id}"
             response = session.get(api_url, headers=TikTokDownloader.HEADERS, timeout=30)
             if response.status_code == 200:
@@ -216,7 +215,6 @@ class PinterestDownloader:
             return {'success': True, 'filepath': filepath, 'title': 'Pinterest Video', 'duration': 0, 'filesize': os.path.getsize(filepath)}
         except Exception as e:
             return {'success': False, 'error': str(e)}
-
 # ---------- مدير التحميل ----------
 class DownloadManager:
     def __init__(self):
@@ -256,7 +254,7 @@ class DownloadManager:
                 'no_cookies': True,
                 'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
             }
-            
+
             # إعدادات خاصة لـ TikTok عبر yt-dlp
             if platform == 'tiktok':
                 ydl_opts['extractor_args'] = {'tiktok': {'cookies': False}}
@@ -292,8 +290,7 @@ class BotUI:
     def main_menu():
         return InlineKeyboardMarkup([
             [InlineKeyboardButton("🎬 تحميل فيديو", callback_data="download")],
-            [InlineKeyboardButton("ℹ️ المساعدة", callback_data="help"), InlineKeyboardButton("📊 الإحصائيات", callback_data="stats")],
-            [InlineKeyboardButton("📞 تواصل مع المطور", url=f"tg://user?id={OWNER_ID}")]
+            [InlineKeyboardButton("ℹ️ المساعدة", callback_data="help"), InlineKeyboardButton("📊 الإحصائيات", callback_data="stats")]
         ])
 
     @staticmethod
@@ -356,7 +353,7 @@ class VideoBot:
 
     async def help(self, update, context):
         await update.message.reply_text(
-            "<b>🆘 المساعدة</b>\n\n1. أرسل رابط فيديو.\n2. اختر الجودة.\n3. انتظر لحظات.\n4. استلم الملف.\n\n⚠️ الحد الأقصى 50 ميغابايت.\n\n📞 للتواصل مع المطور، استخدم الزر الموجود في القائمة الرئيسية.",
+            "<b>🆘 المساعدة</b>\n\n1. أرسل رابط فيديو.\n2. اختر الجودة.\n3. انتظر لحظات.\n4. استلم الملف.\n\n⚠️ الحد الأقصى 50 ميغابايت.",
             parse_mode='HTML'
         )
 
@@ -448,7 +445,12 @@ class VideoBot:
 
 # ---------- تشغيل البوت ----------
 if __name__ == "__main__":
-    TOKEN = os.environ.get("BOT_TOKEN", "8502033667:AAF6tPgPIz2DmHtTXg6Icsh_P51xpsVjcq8")
+    TOKEN = os.environ.get("BOT_TOKEN")
+    if not TOKEN:
+        print("❌ خطأ: متغير BOT_TOKEN غير موجود!")
+        sys.exit(1)
+    if OWNER_ID == 0:
+        print("⚠️ تحذير: OWNER_ID غير موجود، لن يتم إشعار المالك بالمستخدمين الجدد.")
     bot = VideoBot(TOKEN)
     try:
         bot.run()
